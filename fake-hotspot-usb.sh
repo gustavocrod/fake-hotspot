@@ -5,6 +5,9 @@
 #funcao para ativar o ipforward e matar os processos do dhcp airbase e etc
 killing(){
     killall -9 isc-dhcp-server dhcp airbase-ng xterm tail &>/dev/null
+    airmon-ng stop wlan0mon &>/dev/null
+    service isc-dhcp-server stop &>/dev/null
+    
 }
 
 #funcao para dar flush nas regras iptables
@@ -27,10 +30,11 @@ setup_interfaces(){
     echo "[TIP] try:  wlan0, wlp2s0, etc ..."
     read HOTSPOT_IFACE
 
-    echo "Enter the interface used to monitor: "
-    echo "[TIP] try: wlan0mon, wlp2s0mon, etc ..."
-    read MONITOR_IFACE
-
+    #echo "Enter the interface used to monitor: "
+    #echo "[TIP] try: wlan0mon, wlp2s0mon, etc ..."
+    #read MONITOR_IFACE
+    MONITOR_IFACE="wlan0mon"
+    
     echo "[INFO] Your gateway: "
     GATEWAYIP=`route -n | awk '{print $2}' | grep -v 0.0.0.0 | grep -v IP | grep -v Gateway`
     echo "$GATEWAYIP"
@@ -57,7 +61,8 @@ config_at0(){ #configurar a intranet interface
 
 setup_iptables(){
     echo 1 > /proc/sys/net/ipv4/ip_forward
-    iptables -t nat -A PREROUTING -p udp -j DNAT --to 192.168.0.1
+   
+    iptables -t nat -A PREROUTING -p udp -j DNAT --to "$GATEWAYIP"
     iptables -P FORWARD ACCEPT
     iptables --append FORWARD --in-interface at0 -j ACCEPT
     iptables --table nat --append POSTROUTING --out-interface "$INTERNET_IFACE" -j MASQUERADE
@@ -90,7 +95,7 @@ restart_interfaces(){
 }
 
 start_dhcp(){
-    dhcpd -cf /etc/dhcp/dhcpd.conf -pf /var/run/dhcpd.pid at0
+    #dhcpd -cf /etc/dhcp/dhcpd.conf -pf /var/run/dhcpd.pid at0
     service isc-dhcp-server start &>/dev/null
 }
 
@@ -133,6 +138,7 @@ echo "Done"
 
 echo -n "[INFO] building "$FAKE_AP_NAME"... "
 build_ap
+sleep 5
 echo "Done"
     
 echo -n "[INFO] Configuring the intranet interface... "
