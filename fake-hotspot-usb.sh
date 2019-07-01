@@ -50,7 +50,7 @@ setup_interfaces(){
 build_ap(){
     airmon-ng start $HOTSPOT_IFACE &>/dev/null
     xterm -hold -e airbase-ng -c 11 -e $FAKE_AP_NAME $MONITOR_IFACE &
-    sleep 5
+    sleep 30
 }
 
 config_at0(){ #configurar a intranet interface
